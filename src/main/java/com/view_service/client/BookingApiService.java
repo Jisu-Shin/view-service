@@ -5,6 +5,7 @@ import com.view_service.dto.BookingListResponseDto;
 import com.view_service.dto.BookingSearch;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingApiService {
@@ -34,8 +36,6 @@ public class BookingApiService {
     }
 
     public Long cancelBooking(Long id) {
-        System.out.println("***************" + baseUrl);
-
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl)
                 .pathSegment(String.valueOf(id), "cancel");
 
@@ -59,9 +59,6 @@ public class BookingApiService {
             builder.queryParam("itemId", bookingSearch.getItemId());
         }
 
-        System.out.println("***************" + builder.toUriString());
-
-
         // 1. booking 검색
         ResponseEntity<List<BookingListResponseDto>> response = restTemplate.exchange(
                 builder.toUriString(),
@@ -70,17 +67,32 @@ public class BookingApiService {
                 new ParameterizedTypeReference<List<BookingListResponseDto>>() {
                 }
         );
-        List<BookingListResponseDto> result = response.getBody();
+        List<BookingListResponseDto> result = response.getBody().stream()
+                .map(booking -> {
+                    booking.setCustName("");
+                    return booking;
+                })
+                .collect(Collectors.toList());
 
         // 2. cust 조회
         Map<Long, String> custMap;
-        if (bookingSearch.getCustName() != null) {
+        if (bookingSearch.getCustName() != null && !bookingSearch.getCustName().isBlank()) {
+            System.out.println("***** bookingSearch.getCustName() = " + bookingSearch.getCustName());
             custMap = custApiService.getCustId(bookingSearch.getCustName()).stream()
                     .collect(Collectors.toMap(cust -> cust.getId(), cust -> cust.getName()));
 
-            result.stream()
+            log.info("custMap.size {}", custMap.size());
+            log.info("custMap {}", custMap);
+            result = result.stream()
                     .filter(booking -> custMap.containsKey(booking.getCustId()))
-                    .forEach(booking -> booking.setCustName(custMap.get(booking.getCustId())));
+                    .map(booking -> {
+                        booking.setCustName(custMap.get(booking.getCustId()));
+                        return booking;
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("result size {}", result.size());
+            log.info("result {}", result.get(0));
         }
 
         return result;

@@ -16,4 +16,18 @@ public class BookingListResponseDto {
     private String bookingStatus;
     private String bookDt;
     private boolean isBooking;
+
+    @Override
+    public String toString() {
+        return "BookingListResponseDto{" +
+                "bookId=" + bookId +
+                ", custId=" + custId +
+                ", custName='" + custName + '\'' +
+                ", itemName='" + itemName + '\'' +
+                ", count=" + count +
+                ", bookingStatus='" + bookingStatus + '\'' +
+                ", bookDt='" + bookDt + '\'' +
+                ", isBooking=" + isBooking +
+                '}';
+    }
 }
