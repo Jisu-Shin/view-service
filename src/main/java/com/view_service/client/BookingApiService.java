@@ -87,7 +87,7 @@ public class BookingApiService {
     }
 
     public Long book(BookingCreateRequestDto requestDto) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath(baseUrl);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
 
         ResponseEntity<Long> response = restTemplate.postForEntity(
                 builder.toUriString(),
