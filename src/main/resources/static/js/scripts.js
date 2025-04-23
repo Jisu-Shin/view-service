@@ -110,7 +110,7 @@ var main = {
                 sendDt : oper.getTodayDt(),
                 itemId : itemId
                 }
-        oper.ajax("POST",data,'/api/sms/send', callback.sendSms);
+        oper.ajax("POST",data,'/sms/send-by-cust-ids', callback.sendSms);
     },
 
     closeModal : function() {
