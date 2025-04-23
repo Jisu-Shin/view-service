@@ -135,15 +135,14 @@ var main = {
     searchbooking : function () {
         var itemId = $("#selectItem").val();
 
-        if(!itemId){
-         var data = {};
-        } else {
-            var data = {
+        if(itemId){
+             var data = {
                         'itemId' : itemId ,
                         'bookingStatus' : 'BOOK'
                        };
         }
-        oper.ajax("POST",data,'/api/bookings/search', callback.searchbooking);
+
+        oper.ajax("GET", data, "/api/bookings/search", callback.searchbooking);
     }
 
 };
@@ -205,12 +204,19 @@ var oper = {
     },
 
     ajax : function (type, data, url, callback) {
+        // GET이면 쿼리스트링으로 붙이고 data는 제거
+        if (type === "GET" && data && Object.keys(data).length > 0) {
+            const queryString = $.param(data); // itemId=123&bookingStatus=BOOK
+            url += (url.includes("?") ? "&" : "?") + queryString;
+            data = null;
+        }
+
         $.ajax({
             'type': type,
             'url':url,
             'dataType':'json',
             'contentType':'application/json; charset=utf-8',
-            'data':JSON.stringify(data)
+            'data': type === "GET" ? null : JSON.stringify(data)
         })
         .done(function (response){
             callback(response);
